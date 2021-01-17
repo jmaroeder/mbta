@@ -1,4 +1,7 @@
 import functools
+from datetime import datetime
+from datetime import timezone
+from typing import Optional
 from typing import Sequence
 from typing import TypeVar
 from typing import overload
@@ -6,6 +9,7 @@ from typing import overload
 import click
 import typer
 
+from mbta.models import Prediction
 from mbta.models import Route
 from mbta.models import Stop
 from mbta.shared import config
@@ -27,8 +31,11 @@ def main(api_key: str = typer.Option("", envvar="MBTA_API_KEY")) -> None:
     route = select_route()
     stop = select_stop(route)
     direction = select_direction(route)
-
-    typer.echo(f"Next departure time is {next_departure_time(route, direction, stop)}")
+    next_departure = next_departure_time(route=route, direction=direction, stop=stop)
+    if not next_departure:
+        typer.echo("Error: no departure found!")
+        raise typer.Exit(1)
+    typer.echo(f"Next departure time is {next_departure_time()}")
 
 
 def select_route() -> Route:
@@ -46,6 +53,20 @@ def select_stop(route: Route) -> "Stop":
 def select_direction(route: Route) -> str:
     """Select a direction on the given route."""
     return select_from_list(route.direction_names, "direction")
+
+
+def next_departure_time(route: Route, direction: str, stop: Stop) -> Optional[datetime]:
+    """Get the next predicted departure time."""
+    try:
+        predictions = get_predictions(route=route, direction=direction, stop=stop)
+    except TypeError:
+        # no departure time found
+        return None
+    now = datetime.now(tz=timezone.utc)
+    for prediction in predictions:
+        if prediction.departure_time > now:
+            return prediction.departure_time
+    raise ValueError("Unable to find a departure_time later than now.")
 
 
 def select_from_list(seq: Sequence[T], noun: str = None) -> T:
@@ -77,3 +98,12 @@ def get_stops(route_id: str) -> Sequence[Stop]:
     response = session.get(f"stops?filter[route]={route_id}")
     response.raise_for_status()
     return [Stop.from_api(stop_json) for stop_json in response.json()["data"]]
+
+
+def get_predictions(route: Route, direction: str, stop: Stop) -> Sequence[Prediction]:
+    session = mbta_session()
+    response = session.get(f"predictions?filter[route]={route.id}&filter[direction_id]={direction}&filter[stop]={stop.id}")
+    return sorted(
+        (Prediction.from_api(prediction_json) for prediction_json in response.json()["data"]),
+        key=lambda prediction: prediction.departure_time
+    )

@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import fields
+from datetime import datetime
 from typing import Any
 from typing import Mapping
 from typing import Sequence
@@ -42,3 +43,12 @@ class Stop(FromApiMixin):
 
     def __str__(self) -> str:
         return self.name
+
+
+@dataclass
+class Prediction:
+    departure_time: datetime
+
+    @classmethod
+    def from_api(cls, d: Mapping[str, Any]) -> "Prediction":
+        return cls(departure_time=datetime.fromisoformat(d["attributes"]["departure_time"]))
