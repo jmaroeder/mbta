@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "mbta"
+version = "0.1.0"
+description = "A simple utility to find the next train for a particular stop on the MBTA T network"
+authors = ["James Roeder <jmaroeder@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+typer = {extras = ["all"], version = "^0.3.2"}
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
+
+[tool.poetry.scripts]
+mbta = "mbta.main:app"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
