@@ -5,6 +5,7 @@ import click
 import typer
 
 from mbta.models import Route
+from mbta.models import Stop
 from mbta.shared import config
 from mbta.shared import mbta_session
 
@@ -36,6 +37,16 @@ def select_route() -> Route:
     return routes[route_idx]
 
 
+def select_stop(route: Route) -> "Stop":
+    stops = get_stops(route.id)
+    typer.secho("Select a stop from the list below:")
+    for idx, stop in enumerate(stops):
+        idx_str = typer.style(f"{idx}.", bold=True)
+        typer.echo(f"{idx_str} {stop}")
+    stop_idx = int(typer.prompt("Stop", type=click.Choice([str(idx) for idx, _ in enumerate(stops)])))
+    return stops[stop_idx]
+
+
 @functools.lru_cache(maxsize=None)
 def get_routes() -> Sequence[Route]:
     session = mbta_session()
@@ -45,3 +56,11 @@ def get_routes() -> Sequence[Route]:
         (Route.from_api(route_json) for route_json in response.json()["data"]),
         key=lambda route: route.sort_order
     )
+
+
+@functools.lru_cache(maxsize=None)
+def get_stops(route_id: str) -> Sequence[Stop]:
+    session = mbta_session()
+    response = session.get(f"stops?filter[route]={route_id}")
+    response.raise_for_status()
+    return [Stop.from_api(stop_json) for stop_json in response.json()["data"]]

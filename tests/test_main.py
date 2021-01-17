@@ -6,5 +6,5 @@ runner = CliRunner()
 
 
 def test_app():
-    result = runner.invoke(app, input="TODO\n")
+    result = runner.invoke(app, input="0\n0\n0\n")
     assert result.exit_code == 0

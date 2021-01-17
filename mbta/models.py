@@ -33,3 +33,12 @@ class Route(FromApiMixin):
 
     def __str__(self) -> str:
         return self.long_name
+
+
+@dataclass
+class Stop(FromApiMixin):
+    id: str
+    name: str
+
+    def __str__(self) -> str:
+        return self.name
