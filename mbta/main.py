@@ -1,5 +1,6 @@
 import functools
 from typing import Sequence
+from typing import TypeVar
 
 import click
 import typer
@@ -8,6 +9,8 @@ from mbta.models import Route
 from mbta.models import Stop
 from mbta.shared import config
 from mbta.shared import mbta_session
+
+T = TypeVar("T")
 
 app = typer.Typer()
 
@@ -23,28 +26,29 @@ def main(api_key: str = typer.Option("", envvar="MBTA_API_KEY")) -> None:
     route = select_route()
     stop = select_stop(route)
     direction = select_direction(route)
-    typer.secho(f"Next departure time is {next_departure_time(route, direction, stop)}")
+    typer.echo(f"Next departure time is {next_departure_time(route, direction, stop)}")
 
 
 def select_route() -> Route:
-    """"""
     routes = get_routes()
-    typer.secho("Select a route from the list below:")
-    for idx, route in enumerate(routes):
-        idx_str = typer.style(f"{idx}.", bold=True)
-        typer.echo(f"{idx_str} {route}")
-    route_idx = int(typer.prompt("Route", type=click.Choice([str(idx) for idx, _ in enumerate(routes)])))
-    return routes[route_idx]
+    return select_from_list(routes)
 
 
 def select_stop(route: Route) -> "Stop":
     stops = get_stops(route.id)
-    typer.secho("Select a stop from the list below:")
-    for idx, stop in enumerate(stops):
+    return select_from_list(stops)
+
+
+def select_from_list(seq: Sequence[T], noun: str = None) -> T:
+    """Present a list of choices, and return the selected choice."""
+    if noun is None:
+        noun = str(type(seq[0]).__name__.lower())
+    typer.echo(f"Select a {noun} from the list below:")
+    for idx, stop in enumerate(seq):
         idx_str = typer.style(f"{idx}.", bold=True)
         typer.echo(f"{idx_str} {stop}")
-    stop_idx = int(typer.prompt("Stop", type=click.Choice([str(idx) for idx, _ in enumerate(stops)])))
-    return stops[stop_idx]
+    chosen_idx = int(typer.prompt(f"", type=click.Choice([str(idx) for idx, _ in enumerate(seq)])))
+    return seq[chosen_idx]
 
 
 @functools.lru_cache(maxsize=None)
