@@ -1,6 +1,7 @@
 import functools
 from typing import Sequence
 from typing import TypeVar
+from typing import overload
 
 import click
 import typer
@@ -26,17 +27,25 @@ def main(api_key: str = typer.Option("", envvar="MBTA_API_KEY")) -> None:
     route = select_route()
     stop = select_stop(route)
     direction = select_direction(route)
+
     typer.echo(f"Next departure time is {next_departure_time(route, direction, stop)}")
 
 
 def select_route() -> Route:
+    """Select a route."""
     routes = get_routes()
     return select_from_list(routes)
 
 
 def select_stop(route: Route) -> "Stop":
+    """Select a stop on the given route."""
     stops = get_stops(route.id)
     return select_from_list(stops)
+
+
+def select_direction(route: Route) -> str:
+    """Select a direction on the given route."""
+    return select_from_list(route.direction_names, "direction")
 
 
 def select_from_list(seq: Sequence[T], noun: str = None) -> T:

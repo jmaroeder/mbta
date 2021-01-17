@@ -25,7 +25,7 @@ class Route(FromApiMixin):
     short_name: str
     sort_order: int
 
-    def directions_str(self) -> Sequence[str]:
+    def directions_strs(self) -> Sequence[str]:
         return [
             f"{name} ({self.direction_destinations[idx]})"
             for idx, name in self.direction_names
