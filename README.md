@@ -1,5 +1,7 @@
 # mbta
 
+Command-line utility to find the next departing train for a particular stop on the MBTA T network.
+
 ## Quick-start (no installation)
 
 If you have [Docker](https://www.docker.com/), you can run without installing anything else:
