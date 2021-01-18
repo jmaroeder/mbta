@@ -36,6 +36,7 @@ pymbta3 = "^0.0.3-alpha.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
 pytest-cov = "^2.10.1"
+requests-mock = "^1.8.0"
 
 [tool.poetry.scripts]
 mbta = "mbta.main:app"

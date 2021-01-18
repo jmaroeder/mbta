@@ -14,6 +14,7 @@ def config() -> Config:
 
 @singletons.GlobalFactory
 def mbta_session() -> BaseUrlSession:
+    """Return a requests.Session object for accessing the MBTA API."""
     cfg = config()
     session = BaseUrlSession(cfg.api_root)
     if cfg.api_key:
@@ -22,7 +23,7 @@ def mbta_session() -> BaseUrlSession:
 
 
 class _Shared(singletons.SharedModule):
-    globals = globals()
+    globals = globals()  # noqa: WPS125, WPS421
 
 
 sys.modules[__name__] = _Shared()
